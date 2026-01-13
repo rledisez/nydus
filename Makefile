@@ -61,7 +61,7 @@ go_work_version := $(shell grep '^go ' go.work | awk '{print $$2}')
 define build_golang
 	echo "Building target $@ by invoking: $(2)"
 	if [ $(DOCKER) = "true" ]; then \
-		docker run --rm -v ${go_path}:/go -v ${current_dir}:/nydus-rs --workdir /nydus-rs/$(1) golang:${go_work_version} \
+		$(if $(shell which docker 2>/dev/null),docker,podman) run --rm -v ${go_path}:/go -v ${current_dir}:/nydus-rs --workdir /nydus-rs/$(1) golang:${go_work_version} \
 			sh -c "git config --global --add safe.directory /nydus-rs && $(2)" ;\
 	else \
 		$(2) -C $(1); \
@@ -189,5 +189,5 @@ nydus-overlayfs-lint:
 	$(call build_golang,${NYDUS-OVERLAYFS_PATH},make lint)
 
 docker-static:
-	docker build -t nydus-rs-static --build-arg RUST_TARGET=${RUST_TARGET_STATIC} misc/musl-static
-	docker run --rm ${CARGO_BUILD_GEARS} -e RUST_TARGET=${RUST_TARGET_STATIC} --workdir /nydus-rs -v ${current_dir}:/nydus-rs nydus-rs-static
+	$(if $(shell which docker 2>/dev/null),docker,podman) build -t nydus-rs-static --build-arg RUST_TARGET=${RUST_TARGET_STATIC} --build-arg CARGO_COMMON=${CARGO_COMMON} misc/musl-static
+	$(if $(shell which docker 2>/dev/null),docker,podman) run --rm ${CARGO_BUILD_GEARS} -e RUST_TARGET=${RUST_TARGET_STATIC} -e CARGO_COMMON=${CARGO_COMMON} --workdir /nydus-rs -v ${current_dir}:/nydus-rs nydus-rs-static

@@ -1,4 +1,4 @@
-FROM clux/muslrust:1.72.1
+FROM docker.io/clux/muslrust:1.72.1
 
 ARG RUST_TARGET=x86_64-unknown-linux-musl
 
@@ -9,4 +9,4 @@ WORKDIR /nydus-rs
 CMD rustup component add clippy && \
   rustup component add rustfmt && \
   rustup target add $RUST_TARGET && \
-  make static-release
+  make static-release CARGO_COMMON=$CARGO_COMMON
